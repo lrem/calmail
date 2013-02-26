@@ -127,6 +127,35 @@ def send_mail(parsed_event, date, delta_description):
     smtp.sendmail(MAIL, [TO], msg.as_string())
 
 
+def parse_error(day, exc):
+    """
+    Send an information about parse error to `EMAIL` from `credentials.py`.
+    """
+    from credentials import SMTP, MAIL
+    msg = MIMEText('Parsing failed for an event on day ' + str(day) +
+                   "\n\nException: " + str(type(exc)) + ' ' + str(exc))
+    msg['Subject'] = 'CALMAIL PARSE ERROR'
+    msg['FROM'] = MAIL
+    msg['TO'] = MAIL
+    smtp = smtplib.SMTP(SMTP)
+    smtp.sendmail(MAIL, [MAIL], msg.as_string())
+
+
+def sending_error(parsed, day, ddesc, exc):
+    """
+    Send an information about sending error to `EMAIL` from `credentials.py`.
+    """
+    from credentials import SMTP, MAIL
+    msg = MIMEText('Sending failed for an event on day ' + str(day) +
+                   "\n\nException: " + str(type(exc)) + ' ' + str(exc) +
+                   "\n\nParsed: \n" + str(parsed))
+    msg['Subject'] = 'CALMAIL SENDING ERROR'
+    msg['FROM'] = MAIL
+    msg['TO'] = MAIL
+    smtp = smtplib.SMTP(SMTP)
+    smtp.sendmail(MAIL, [MAIL], msg.as_string())
+
+
 def main():
     print "Getting calendar"
     cal = get_calendar()
@@ -137,10 +166,17 @@ def main():
         evs = filter_events(cal, day)
         print len(evs), "found"
         for event in evs:
-            parsed = parse_event(event)
-            print "Sending email about", parsed['SUMMARY']
-            send_mail(parsed, day, ddesc)
-            print "Done"
+            try:
+                parsed = parse_event(event)
+            except Exception, exc:
+                parse_error(day, exc)
+            else:
+                print "Sending email about", parsed['SUMMARY']
+                try:
+                    send_mail(parsed, day, ddesc)
+                except Exception, exc:
+                    sending_error(parsed, day, ddesc, exc)
+                print "Done"
 
 if __name__ == '__main__':
     main()
