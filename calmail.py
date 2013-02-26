@@ -47,6 +47,7 @@ def parse_event(event):
             for key in ret:
                 if key in component:
                     ret[key] = component[key]
+            ret['TIME'] = str(component['DTSTART'].dt.time())
     assert found, "No 'VEVENT' in event"
     return ret
 
