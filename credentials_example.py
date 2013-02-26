@@ -1,0 +1,6 @@
+HOST = 'zimbra.inria.fr'
+SMTP = 'smtp.inria.fr'
+MAIL = 'FIRST.LAST@inria.fr'
+USER = 'UNAME'
+PASS = 'PASS'
+CAL = 'Seminars'

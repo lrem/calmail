@@ -121,10 +121,10 @@ def send_mail(parsed_event, date, delta_description):
     msg = MIMEText(TEMPLATE % parsed_event)
     msg['Subject'] = SUBJECT + ' ' + str(date)
     msg['From'] = MAIL
-    msg['To'] = TO
+    msg['To'] = ', '.join(TO)
 
     smtp = smtplib.SMTP(SMTP)
-    smtp.sendmail(MAIL, [TO], msg.as_string())
+    smtp.sendmail(MAIL, TO, msg.as_string())
 
 
 def parse_error(day, exc):
