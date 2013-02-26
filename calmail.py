@@ -1,8 +1,12 @@
 import caldav
 import datetime
 import icalendar
+import smtplib
 
-DAYS_BEFORE = [5, 1, 0]
+from email.mime.text import MIMEText
+
+DELTAS = [5, 1, 0]
+DELTA_DESCRIPTIONS = ['in 5 days', 'tomorrow', 'today']
 
 
 def get_calendar():
@@ -16,17 +20,13 @@ def get_calendar():
     return princ.calendars()[0]
 
 
-def filter_events(cal):
+def filter_events(cal, day):
     """
-    Get the events in *cal* that have a date that is one of `DAYS_BEFORE`
-    in the future.
+    Get the events in *cal* that happen the given `day`.
     """
-    results = []
-    for delta in DAYS_BEFORE:
-        day = datetime.date.today() + datetime.timedelta(days=delta)
-        results.extend(cal.date_search(day, day + datetime.timedelta(days=1)))
-        print day
-    return results
+    return cal.date_search(day, day + datetime.timedelta(days=1))
+
+        #day = datetime.date.today() + datetime.timedelta(days=delta)
 
 
 def parse_event(event):
@@ -35,9 +35,10 @@ def parse_event(event):
     The fields are:
         - `SUMMARY` for the event name
         - `DESCRIPTION` for long description
+        - `LOCATION`
     """
     ice = icalendar.Calendar.from_ical(event.data)
-    ret = {key: '' for key in ('SUMMARY', 'DESCRIPTION')}
+    ret = {key: '' for key in ('SUMMARY', 'DESCRIPTION', 'LOCATION', 'TIME')}
     found = False
     for component in ice.walk():
         if component.name == 'VEVENT':
@@ -48,3 +49,23 @@ def parse_event(event):
                     ret[key] = component[key]
     assert found, "No 'VEVENT' in event"
     return ret
+
+
+def send_mail(parsed_event, date, delta_description):
+    """
+    Send a mail alert about the `parsed_event`,
+    using SMTP and credentials from `credentials.py`;
+    mail template is taken from `mail_template.py`.
+    """
+    from mail_template import SUBJECT, TEMPLATE, TO
+    from credentials import SMTP, MAIL
+    parsed_event['DATE'] = date
+    parsed_event['DELTA'] = delta_description
+
+    msg = MIMEText(TEMPLATE % parsed_event)
+    msg['Subject'] = SUBJECT + ' ' + str(date)
+    msg['From'] = MAIL
+    msg['To'] = TO
+
+    smtp = smtplib.SMTP(SMTP)
+    smtp.sendmail(MAIL, [TO], msg.as_string())
