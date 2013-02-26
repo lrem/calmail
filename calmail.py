@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import caldav
 import datetime
 import icalendar
@@ -26,8 +27,6 @@ def filter_events(cal, day):
     Get the events in *cal* that happen the given `day`.
     """
     return cal.date_search(day, day + datetime.timedelta(days=1))
-
-        #day = datetime.date.today() + datetime.timedelta(days=delta)
 
 
 def parse_event(event):
@@ -86,3 +85,22 @@ def send_mail(parsed_event, date, delta_description):
 
     smtp = smtplib.SMTP(SMTP)
     smtp.sendmail(MAIL, [TO], msg.as_string())
+
+
+def main():
+    print "Getting calendar"
+    cal = get_calendar()
+    print "Done"
+    for delta, ddesc in zip(DELTAS, DELTA_DESCRIPTIONS):
+        print "Searching events for", ddesc
+        day = datetime.date.today() + datetime.timedelta(days=delta)
+        evs = filter_events(cal, day)
+        print len(evs), "found"
+        for event in evs:
+            parsed = parse_event(event)
+            print "Sending email about", parsed['SUMMARY']
+            send_mail(parsed, day, ddesc)
+            print "Done"
+
+if __name__ == '__main__':
+    main()
