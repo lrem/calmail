@@ -18,4 +18,8 @@ https://team.inria.fr/coati/seminars-and-conferences/seminars/
 
 You can also add seminars to your calendar application (ICS format):
 https://zimbra.inria.fr/home/remigiusz.modrzejewski@inria.fr/Seminars
+
+--
+Sent using CalMail by Remigiusz 'lRem' Modrzejewski
+https://github.com/lrem/calmail
 '''
