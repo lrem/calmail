@@ -161,8 +161,8 @@ def main():
     cal = get_calendar()
     print "Done"
     for delta, ddesc in zip(DELTAS, DELTA_DESCRIPTIONS):
-        print "Searching events for", ddesc
         day = datetime.date.today() + datetime.timedelta(days=delta)
+        print "Searching events for", day, '(', ddesc, ')'
         evs = filter_events(cal, day)
         print len(evs), "found"
         for event in evs:
