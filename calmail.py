@@ -118,7 +118,7 @@ def send_mail(parsed_event, date, delta_description):
     parsed_event['DATE'] = date
     parsed_event['DELTA'] = delta_description
 
-    msg = MIMEText(TEMPLATE % parsed_event)
+    msg = MIMEText(TEMPLATE % parsed_event, 'plain', 'utf-8')
     msg['Subject'] = SUBJECT + ' ' + str(date)
     msg['From'] = MAIL
     msg['To'] = ', '.join(TO)
