@@ -83,6 +83,8 @@ def parse_event(event):
             for key in ret:
                 if key in component:
                     ret[key] = component[key]
+                    if key == 'LOCATION':
+                        ret[key] = re.sub(' *<.*>', '', ret[key])
             ret['TIME'] = str(component['DTSTART'].dt.time())
             ret.update(parse_description(component['DESCRIPTION']))
     assert found, "No 'VEVENT' in event"
