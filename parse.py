@@ -77,6 +77,8 @@ def parse_single(component):
             if key == 'LOCATION':
                 ret[key] = re.sub(' *<.*>', '', ret[key])
     ret['TIME'] = str(component['DTSTART'].dt.time())
+    ret['DATE'] = str(component['DTSTART'].dt.date())
+    ret['EPOCH'] = str(component['DTSTART'].dt.strftime('%s'))
     ret.update(parse_description(component['DESCRIPTION']))
     return ret
 

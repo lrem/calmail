@@ -40,6 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 import requests
 import json
+import re
 
 from parse import parse_calendar
 
@@ -81,10 +82,23 @@ def dump_json(data, fname):
     json.dump(data, out)
 
 
+def add_formatting(data):
+    """
+    Add a little bit of formatting.
+    Modifies `data` in-place.
+    :param data: list of event dictionaries
+    :type data: as returned by `parse.parse_calendar`
+    """
+    for event in data:
+        event['ABSTRACT'] = re.sub('\n\s*\n', '</p><p>', event['ABSTRACT'])
+
+
 def main():
     args = get_args()
     ics = get_ics(args.url)
     parsed = parse_calendar(ics)
+    parsed.reverse()
+    add_formatting(parsed)
     dump_json(parsed, args.out)
 
 if __name__ == '__main__':
