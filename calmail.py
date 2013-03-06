@@ -3,7 +3,7 @@
 iCal to email notifications
 ===========================
 
-By Remigiusz `lRem` Modrzejewski.
+By Remigiusz 'lRem' Modrzejewski.
 
 This script is created to automatically send announcements
 of the *weekly* seminars of COATI team.
@@ -41,11 +41,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 import caldav
 import datetime
-import icalendar
 import smtplib
-import re
 
 from email.mime.text import MIMEText
+from parse import parse_event
 
 DELTAS = [5, 1, 0]
 DELTA_DESCRIPTIONS = ['in 5 days', 'tomorrow', 'today']
@@ -67,46 +66,6 @@ def filter_events(cal, day):
     Get the events in *cal* that happen the given `day`.
     """
     return cal.date_search(day, day + datetime.timedelta(days=1))
-
-
-def parse_event(event):
-    """
-    Return a hash with interesting fields of the `event`.
-    """
-    ice = icalendar.Calendar.from_ical(event.data)
-    ret = {key: '' for key in ('SUMMARY', 'LOCATION', 'TIME')}
-    found = False
-    for component in ice.walk():
-        if component.name == 'VEVENT':
-            assert not found, "Multiple 'VEVENT' fields in event"
-            found = True
-            for key in ret:
-                if key in component:
-                    ret[key] = component[key]
-                    if key == 'LOCATION':
-                        ret[key] = re.sub(' *<.*>', '', ret[key])
-            ret['TIME'] = str(component['DTSTART'].dt.time())
-            ret.update(parse_description(component['DESCRIPTION']))
-    assert found, "No 'VEVENT' in event"
-    return ret
-
-
-def parse_description(dsc):
-    """
-    Parse the given string into a hash.
-    The string format is `key: value`,
-    where key gets converted to upper case
-    and value extends until a new line.
-    A special last field `Abstract:` extends until the end of string.
-    """
-    meta, abstract = re.split('abstract:\s*\n*', dsc, flags=re.I)
-    ret = {'ABSTRACT': abstract}
-    for line in meta.splitlines():
-        if ':' in line:
-            key, value = re.split('\s*:\s*', line, 1)
-            key = key.upper()
-            ret[key] = value
-    return ret
 
 
 def send_mail(parsed_event, date, delta_description):
