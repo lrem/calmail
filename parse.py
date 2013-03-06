@@ -35,29 +35,49 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """
-import datetime
 import icalendar
 import re
+
 
 def parse_event(event):
     """
     Return a hash with interesting fields of the `event`.
     """
     ice = icalendar.Calendar.from_ical(event.data)
-    ret = {key: '' for key in ('SUMMARY', 'LOCATION', 'TIME')}
     found = False
     for component in ice.walk():
         if component.name == 'VEVENT':
             assert not found, "Multiple 'VEVENT' fields in event"
             found = True
-            for key in ret:
-                if key in component:
-                    ret[key] = component[key]
-                    if key == 'LOCATION':
-                        ret[key] = re.sub(' *<.*>', '', ret[key])
-            ret['TIME'] = str(component['DTSTART'].dt.time())
-            ret.update(parse_description(component['DESCRIPTION']))
+            ret = parse_single(component)
     assert found, "No 'VEVENT' in event"
+    return ret
+
+
+def parse_calendar(calendar_string):
+    """
+    Return a list of hashes of interesting fields of events in the calendar.
+    """
+    ice = icalendar.Calendar.from_ical(calendar_string)
+    ret = []
+    for component in ice.walk():
+        if component.name == 'VEVENT':
+            ret.append(parse_single(component))
+    return ret
+
+
+def parse_single(component):
+    """
+    Parse a single event component.
+    """
+    ret = {key: '' for key in ('SUMMARY', 'LOCATION', 'TIME')}
+    for key in ret:
+        if key in component:
+            ret[key] = component[key]
+            if key == 'LOCATION':
+                ret[key] = re.sub(' *<.*>', '', ret[key])
+    ret['TIME'] = str(component['DTSTART'].dt.time())
+    ret.update(parse_description(component['DESCRIPTION']))
     return ret
 
 
