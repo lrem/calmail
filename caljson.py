@@ -97,7 +97,7 @@ def main():
     args = get_args()
     ics = get_ics(args.url)
     parsed = parse_calendar(ics)
-    parsed.reverse()
+    parsed.sort(key=lambda e: e['EPOCH'], reverse=True)
     add_formatting(parsed)
     dump_json(parsed, args.out)
 
