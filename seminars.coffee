@@ -22,7 +22,8 @@ $ ->
             <p>
             #{e['ABSTRACT']}
             </p>
-            </blockquote>"
+            </blockquote>
+            <p>Room: #{e['LOCATION']}</p>"
         content += '</div>'
         div = $('div.entry-content')
         div.replaceWith content
