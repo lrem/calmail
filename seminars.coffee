@@ -6,8 +6,14 @@ $ ->
         register the following calendar (ICS format): <a href=
         "https://zimbra.inria.fr/home/remigiusz.modrzejewski@inria.fr/Seminars">
         https://zimbra.inria.fr/home/remigiusz.modrzejewski@inria.fr/Seminars</a>
-        </p>'
+        </p>
+        <h2>Upcoming</h2>'
+        upcoming = true
         for e in data
+            past  = (new Date().getTime()/1000 > e['EPOCH'])
+            if upcoming and past
+                content += "<h2>Past</h2>"
+                upcoming = false
             slides = if not e['SLIDES'] then '' else \
                 "<p><a href=\"#{e['SLIDES']}\">Slides</a></p>"
             content += "
